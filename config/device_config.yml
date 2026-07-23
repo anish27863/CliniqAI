@@ -1,0 +1,31 @@
+device: cuda
+
+# Machine-specific settings
+machines:
+  anish:
+    gpu: RTX 4050
+    vram_gb: 6
+    batch_size_small: 32
+    batch_size_medium: 16
+    batch_size_large: 8
+    num_workers: 0
+  
+  roneet:
+    gpu: RTX 5050
+    vram_gb: 12
+    batch_size_small: 64
+    batch_size_medium: 32
+    batch_size_large: 16
+    num_workers: 0
+
+# Training defaults
+training:
+  epochs: 25
+  learning_rate: 1e-4
+  optimizer: adamw
+  weight_decay: 0.01
+
+# Inference
+inference:
+  confidence_threshold: 0.90
+  batch_size: 1

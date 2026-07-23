@@ -1,0 +1,40 @@
+# Model weights
+*.pt
+*.pth
+*.safetensors
+models/checkpoints/
+*.ckpt
+
+# Datasets
+data/raw/
+data/processed/
+*.csv
+*.zip
+*.tar.gz
+
+# Environment
+.env
+.env.local
+*.env
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+venv/
+env/
+ENV/
