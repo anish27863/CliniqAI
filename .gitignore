@@ -38,3 +38,18 @@ Thumbs.db
 venv/
 env/
 ENV/
+
+google_credentials.json
+
+# Data - don't commit raw datasets
+data/raw/
+data/processed/
+data/router_training/
+
+# Model checkpoints (too large)
+models/checkpoints/
+
+# Cache
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
