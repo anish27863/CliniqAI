@@ -216,8 +216,7 @@ CliniqAI is a graded project exhibition course deliverable implementing an adapt
 | Router | Modality Classification | 100.00% | — | ✅ Complete |
 | Retinal Specialist | Diabetic Retinopathy | 79.51% | 0.7610 | ✅ Complete |
 | Kidney Specialist | CT Classification | 98.31% | 0.9833 | ✅ Complete |
-| Brain Tumor Specialist | MRI Classification | — | — | ⏳ Pending |
-
+| Brain Tumor Specialist | MRI Classification | 89.81% | 0.8952 | ✅ Complete |
 ---
 
 ## Hardware & Environment
