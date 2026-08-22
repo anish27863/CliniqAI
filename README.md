@@ -15,7 +15,7 @@ A comprehensive AI system that accepts any medical image (MRI, X-ray, retinal fu
 
 - Anish (VIT Bhopal)
 - Roneet (VIT Bhopal)
-- [Additional members]
+- Khushboo Patil (VIT Bhopal)
 
 ## Datasets
 
