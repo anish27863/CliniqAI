@@ -30,7 +30,17 @@ import torch.nn as nn
 from torchvision.models import efficientnet_b0
 
 KNOWN_CLASS_NAMES = {
-    "specialist:brain_mri": ["glioma", "meningioma", "notumor", "pituitary"],
+    "specialist:brain_mri": [
+    "Astrocytoma T1", "Astrocytoma T1C+", "Astrocytoma T2",
+    "Ependymoma T1", "Ependymoma T1C+", "Ependymoma T2",
+    "Glioma T1", "Glioma T1C+", "Glioma T2",
+    "Hemangiopericytoma T1", "Hemangiopericytoma T1C+", "Hemangiopericytoma T2",
+    "Meningioma T1", "Meningioma T1C+", "Meningioma T2",
+    "Neurocytoma T1", "Neurocytoma T1C+", "Neurocytoma T2",
+    "Normal T1", "Normal T1C+", "Normal T2",
+    "Oligodendroglioma T1", "Oligodendroglioma T1C+", "Oligodendroglioma T2",
+    "Other T1", "Other T1C+", "Other T2",
+    "Schwannoma T1", "Schwannoma T1C+", "Schwannoma T2",],
     "specialist:kidney_ct": ["Cyst", "Normal", "Stone", "Tumor"],
     "specialist:retinal": ["No DR", "Mild", "Moderate", "Severe", "Proliferative"],
 }

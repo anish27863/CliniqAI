@@ -24,7 +24,7 @@ SPECIALISTS_DIR = MODELS_ROOT / "specialists"
 # says "brain_mri", the checkpoint is "brain_tumor_specialist_v1.pt") --
 # that's expected, this mapping is exactly what bridges that gap.
 SPECIALIST_REGISTRY = {
-    "brain_mri": "brain_tumor_specialist_v1.pt",
+    "brain_mri": "brain_tumor_specialist_v2.pt",
     "kidney_ct": "kidney_specialist_v1.pt",
     "retinal": "retinal_specialist_v1.pt",
     "pneumonia": "pneumonia_specialist_v1.pt",
