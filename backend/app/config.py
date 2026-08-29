@@ -29,7 +29,7 @@ SPECIALIST_REGISTRY = {
     "retinal": "retinal_specialist_v1.pt",
     "pneumonia": "pneumonia_specialist_v1.pt",
     "skin_lesion": "skin_lesion_specialist_v1.pt",
-    "breast_histology": "breast_histology_specialist_v1.pt",
+    "breast_histology": "breast_histology_specialist_v2.pt",
     "bone_fracture": "bone_fracture_specialist_v1.pt",
 }
 
