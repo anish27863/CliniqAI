@@ -14,7 +14,7 @@ from pathlib import Path
 # git-lfs (see DEPLOY.md), so this relative path still resolves correctly.
 MODELS_ROOT = Path(__file__).resolve().parent.parent / "models"
 
-ROUTER_STAGE1_PATH = MODELS_ROOT / "router" / "router_stage1_v2_efficientnet_b0.pt"
+ROUTER_STAGE1_PATH = MODELS_ROOT / "router" / "router_stage1_v4_efficientnet_b0.pt"
 ROUTER_STAGE2_PATH = MODELS_ROOT / "router" / "router_stage2_efficientnet_b0.pt"
 
 SPECIALISTS_DIR = MODELS_ROOT / "specialists"
@@ -24,12 +24,12 @@ SPECIALISTS_DIR = MODELS_ROOT / "specialists"
 # says "brain_mri", the checkpoint is "brain_tumor_specialist_v1.pt") --
 # that's expected, this mapping is exactly what bridges that gap.
 SPECIALIST_REGISTRY = {
-    "brain_mri": "brain_tumor_specialist_v1.pt",
+    "brain_mri": "brain_tumor_specialist_v2.pt",
     "kidney_ct": "kidney_specialist_v1.pt",
     "retinal": "retinal_specialist_v1.pt",
     "pneumonia": "pneumonia_specialist_v1.pt",
     "skin_lesion": "skin_lesion_specialist_v1.pt",
-    "breast_histology": "breast_histology_specialist_v1.pt",
+    "breast_histology": "breast_histology_specialist_v2.pt",
     "bone_fracture": "bone_fracture_specialist_v1.pt",
 }
 
