@@ -15,7 +15,7 @@ from pathlib import Path
 MODELS_ROOT = Path(__file__).resolve().parent.parent / "models"
 
 ROUTER_STAGE1_PATH = MODELS_ROOT / "router" / "router_stage1_v2_efficientnet_b0.pt"
-ROUTER_STAGE2_PATH = MODELS_ROOT / "router" / "router_stage2_efficientnet_b0.pt"
+ROUTER_STAGE2_PATH = MODELS_ROOT / "router" / "router_stage2_v2_efficientnet_b0.pt"
 
 SPECIALISTS_DIR = MODELS_ROOT / "specialists"
 
