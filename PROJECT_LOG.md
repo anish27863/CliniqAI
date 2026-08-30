@@ -320,3 +320,108 @@ CliniqAI is a graded project exhibition course deliverable implementing an adapt
 - Generate train/val/test splits
 - Start router model training (Week 2)
  develop
+# CliniqAI — Handoff Addendum (v4 → v5)
+
+**Purpose:** append to `CliniqAI — Project Handoff v4`. Everything in v4 still stands except
+where noted below. This session did not touch the gatekeeper bug, kidney bug, or Stage 2
+confusion bug directly — it opened a new, higher-priority thread: **replacing the
+breast_histology specialist's training data entirely.**
+
+---
+
+## New this session: breast_histology dataset replacement
+
+**Decision made:** the IDC dataset (50×50px patches upscaled 4.5x) that both the
+`breast_histology` specialist and the gatekeeper's `breast_histology` positive class were
+trained on is being retired — not patched further with augmentation. Quantity was fine (large
+dataset), quality was the actual flaw: tiny, blocky patches with no real magnification variety.
+
+**New dataset selected: BreakHis** (Spanhol et al., IEEE TBME 2016). Kaggle mirror
+`ambarish/breakhis` (select `BreaKHis_v1`). 7,909 real histopathology images, 700×460px RGB,
+four magnification levels (40X/100X/200X/400X), 82 patients, benign/malignant across 8
+histological subtypes (Adenosis, Fibroadenoma, Tubular Adenoma, Phyllodes Tumor / Ductal
+Carcinoma, Lobular Carcinoma, Mucinous Carcinoma, Papillary Carcinoma). Free for non-commercial
+research/educational use — cite the original paper if used in the report.
+
+**Class semantics change — action required before deploy:** BreakHis's native labels are
+`benign`/`malignant` (tumor-level diagnosis), not `idc_negative`/`idc_positive` (invasive ductal
+carcinoma presence in a patch — a different clinical question). The new notebook defaults to
+binary `benign`/`malignant`. An 8-subtype multiclass mode is built in
+(`MULTICLASS_SUBTYPES = True` in Step 1) but not the default. **Whichever is used,
+`backend/app/schemas.py` and any frontend label-display logic need updating** before this
+checkpoint is pointed at from `config.py` — the old IDC-style output format doesn't apply.
+
+**Deliverable produced:** `breast_histology_v2_pipeline.ipynb` — a single, run-top-to-bottom,
+fully automated notebook covering the entire pipeline end to end:
+
+1. Kaggle download (pinned `kaggle==1.6.17`, per the established MemoryError-on-large-datasets
+   fix)
+2. Filename-based parsing of label / subtype / magnification / patient_id via regex on the
+   official `SOB_{B|M}_{SUBTYPE}-{patient_id}-{mag}-{seq}.png` convention, with directory-based
+   fallback for any mismatched files
+3. Corrupted-file pre-validation pass (established project convention)
+4. **Patient-grouped** train/val/test split (~80/10/10), stratified by label — BreakHis has
+   multiple images per patient across magnifications, so an image-level split would leak
+   near-duplicate tissue across sets and inflate eval numbers
+5. Standalone `scripts/breast_histology_dataset_v2.py` Dataset module, written to disk by the
+   notebook itself (Windows `num_workers>0` multiprocessing requires this to live outside the
+   notebook)
+6. Standard project training recipe: EfficientNet-B0, **simple head**
+   (`Dropout→Linear(1280,num_classes)` — matches the existing checkpoint group so
+   `model_loader.py`'s `_build_matching_head()` needs no changes), `WeightedRandomSampler` +
+   weighted `CrossEntropyLoss` for the ~2.2x benign/malignant imbalance, non-deprecated AMP
+   (`torch.amp.autocast`/`GradScaler`), `channels_last`, `num_workers=4` /
+   `pin_memory=True` / `persistent_workers=True` / `prefetch_factor=4`,
+   `torch.backends.cudnn.benchmark=True`
+7. Per-epoch checkpointing to `.checkpoint_inprogress.pt` on val_loss improvement, with a resume
+   cell for kernel-restart recovery
+8. Final save to both `models/specialists/breast_histology_specialist_v2.pt` and the
+   `backend/models/specialists/` copy, plus a companion `.history.json`
+9. Test-set evaluation broken down **overall, per-magnification, and per-subtype** — not a
+   single aggregate number
+10. Real-world sanity check against whatever's in `data/raw/manual_sanity_check/` (the same
+    folder used for gatekeeper sanity testing), since in-distribution accuracy alone has already
+    been shown (on the gatekeeper) not to guarantee real-world generalization
+
+**Status: written, not yet run.** No checkpoint exists yet from this pipeline. Nothing has been
+committed — the notebook and `breast_histology_dataset_v2.py` should go on a new branch (e.g.
+`feature/breast-histology-v2`) once training succeeds and the sanity check looks right, following
+the same discipline as the gatekeeper v3 checkpoints (don't point `config.py` at it until it
+passes real-world sanity, not just in-distribution accuracy).
+
+**Bonus angle noted, not yet acted on:** BreakHis's four native magnification levels are real
+zoom-scale variety — exactly what the gatekeeper's old 50×50-patch-only positive class was
+missing. Once this specialist is trained and validated, swapping BreakHis in as the gatekeeper's
+`breast_histology` positive-class source is a plausible fix for the zoom/crop-scale hypothesis
+from v4 — likely worth trying **before** a third resolution-only fine-tune attempt on the
+gatekeeper. This is a separate task, not part of this notebook.
+
+---
+
+## Everything else from v4 — unchanged, still open
+
+- **Gatekeeper breast_histology rejection bug** — still open. Two fine-tune attempts (resolution
+  augmentation only) both failed on the real-world sanity image. The crop-scale diagnostic test
+  from v4 (crop the sanity image to patch-scale, re-test) was never run this session — still the
+  next actionable step *if* the BreakHis-swap approach above isn't tried first.
+- **Kidney specialist label-order bug** — still fully open, untouched.
+  `Select-String -Path "E:\programming\CliniqAI\scripts\build_kidney_dataset.py" -Pattern "class_to_idx" -Context 3,3`
+  still hasn't been run.
+- **Stage 2 kidney/brain_mri confusion bug** — still fully open, untouched. Lowest priority.
+- **Open PRs** (`feature/router`, `feature/backend-api` into `develop`) — still unconfirmed.
+- **Google Drive sync** of `brain_tumor_specialist_v2.pt` / gatekeeper v2 checkpoint — still
+  unconfirmed.
+- **Uncommitted from v4**, still uncommitted: the v3 gatekeeper fine-tune notebook, the updated
+  `gatekeeper_dataset_v2.py` with `RandomResolutionDegradation`, the crop-test cell, and now also
+  this session's `breast_histology_v2_pipeline.ipynb` + `breast_histology_dataset_v2.py`.
+- `bugs.txt` — still untracked, still unclear if it's scratch or meant to be tracked.
+
+## Priority order going into next session
+
+1. Run `breast_histology_v2_pipeline.ipynb` — download, train, evaluate, sanity-check. This is
+   the only item with a ready-to-run deliverable sitting untouched.
+2. Kidney label-order check — one command, cheap, still not run since v4.
+3. Decide gatekeeper fix path: BreakHis-swap (new, likely better) vs. the crop-scale diagnostic
+   from v4 (older, narrower). Don't run both blind — pick one based on what's learned from step 1.
+4. Stage 2 kidney/brain_mri confusion retrain — lowest priority, unchanged.
+5. Commit sweep: everything listed under "Uncommitted from v4" above, once it's not mid-experiment.
