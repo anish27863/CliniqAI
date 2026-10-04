@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from io import BytesIO
+from typing import Literal
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,7 +42,11 @@ def health():
 
 
 @app.post("/analyze", response_model=AnalyzeResponse)
-async def analyze(file: UploadFile = File(...)):
+async def analyze(
+    file: UploadFile = File(...),
+    explain: bool = False,
+    method: Literal["gradcam", "gradcampp"] = "gradcam",
+):
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Uploaded file must be an image.")
 
@@ -54,5 +59,5 @@ async def analyze(file: UploadFile = File(...)):
     except OSError:
         raise HTTPException(status_code=400, detail="Image file appears corrupted or truncated.")
 
-    result = run_inference(pil_image, registry)
+    result = run_inference(pil_image, registry, explain=explain, explain_method=method)
     return AnalyzeResponse(**result)
