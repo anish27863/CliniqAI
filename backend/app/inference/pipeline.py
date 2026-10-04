@@ -15,6 +15,7 @@ from app.config import (
 )
 from app.inference.model_loader import load_efficientnet_checkpoint, IncompatibleCheckpointError
 from app.inference.preprocess import inference_transform
+from app.gradcam import explain as gradcam_explain
 
 
 class ModelRegistry:
@@ -73,7 +74,7 @@ def _predict(model, class_names, image_tensor, device):
     return class_names[pred_idx], confidence, all_probs
 
 
-def run_inference(pil_image, registry: ModelRegistry):
+def run_inference(pil_image, registry: ModelRegistry, explain: bool = False, explain_method: str = "gradcam"):
     """
     Full pipeline: gatekeeper -> modality classifier -> specialist.
     Returns a plain dict matching the AnalyzeResponse schema.
@@ -127,7 +128,7 @@ def run_inference(pil_image, registry: ModelRegistry):
         or prediction_confidence < CONFIDENCE_THRESHOLD
     )
 
-    return {
+    result = {
         "is_medical": True,
         "gatekeeper_confidence": stage1_confidence,
         "modality": modality,
@@ -138,3 +139,19 @@ def run_inference(pil_image, registry: ModelRegistry):
         "low_confidence_warning": low_confidence,
         "message": "OK",
     }
+
+    if explain:
+        method = "gradcam++" if explain_method in ("gradcampp", "gradcam++") else "gradcam"
+        try:
+            result["explanation"] = gradcam_explain(
+                specialist_model,
+                pil_image.convert("RGB"),
+                preprocess=inference_transform,      # identical preprocessing to the prediction above
+                class_names=specialist_classes,
+                method=method,
+            )
+        except Exception as e:  # an explanation failure must never break the diagnosis itself
+            print(f"[warning] Grad-CAM failed for '{modality}': {e}")
+            result["explanation_error"] = str(e)
+
+    return result
