@@ -53,5 +53,6 @@ models/checkpoints/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
-
+*.bak
+*.png
 *.pdf
