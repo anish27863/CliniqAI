@@ -19,7 +19,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CliniqAI - Diagnostic Intelligence",
+  title: "CliniqAI - See Beyond the Scan",
   description: "AI-powered medical scan diagnosis and attention mapping.",
 };
 
@@ -29,9 +29,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth">
       <body
-        className={`${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} font-sans antialiased bg-[#FAFBFC] text-[#0F1B2D] min-h-screen flex flex-col`}
+        className={`${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} font-sans antialiased particle-bg min-h-screen flex flex-col`}
       >
         {children}
       </body>
