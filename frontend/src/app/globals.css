@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  body {
+    background-color: #FAFBFC;
+    color: #0F1B2D;
+  }
+}
+
+@layer utilities {
+  @keyframes scan {
+    0% { top: 0; opacity: 0; }
+    5% { opacity: 1; }
+    95% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  @keyframes pulse-custom {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  @keyframes grow {
+    to { width: var(--target-width, 100%); }
+  }
+
+  .scanline {
+    animation: scan 2s linear infinite;
+  }
+
+  .pulse-loading {
+    animation: pulse-custom 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .bar-grow {
+    animation: grow 1s ease-out forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scanline, .pulse-loading, .bar-grow { 
+      animation: none; 
+    }
+  }
+}
