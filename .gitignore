@@ -58,4 +58,4 @@ __pycache__/
 *.pdf
 
 # AWS key
-*.pem
+*.pem*.pem

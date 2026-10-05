@@ -31,7 +31,7 @@ export default function Home() {
     // Health check mock
     const checkHealth = async () => {
       try {
-        const res = await fetch('http://localhost:8000/health');
+        const res = await fetch('/api/health');
         if (res.ok) {
           setHealthStatus('online');
         } else {
@@ -100,7 +100,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append('file', file);
       
-      const res = await fetch('http://localhost:8000/analyze', {
+      const res = await fetch('/api/analyze', {
         method: 'POST',
         body: formData,
       });
@@ -483,3 +483,4 @@ export default function Home() {
     </div>
   );
 }
+
