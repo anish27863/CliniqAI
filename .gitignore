@@ -56,3 +56,6 @@ __pycache__/
 *.bak
 *.png
 *.pdf
+
+# AWS key
+*.pem
