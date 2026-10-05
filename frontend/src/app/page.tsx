@@ -31,8 +31,12 @@ export default function Home() {
     // Health check mock
     const checkHealth = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setHealthStatus('online');
+        const res = await fetch('http://localhost:8000/health');
+        if (res.ok) {
+          setHealthStatus('online');
+        } else {
+          setHealthStatus('offline');
+        }
       } catch {
         setHealthStatus('offline');
       }
@@ -92,23 +96,27 @@ export default function Home() {
     if (!file) return;
     setAppState('analyzing');
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Mock Response
-    setResultData({
-      is_medical: true,
-      modality: 'bone_fracture',
-      prediction: 'fractured',
-      prediction_confidence: 0.925,
-      low_confidence_warning: false,
-      all_class_probabilities: {
-        'Fractured': 0.925,
-        'Normal': 0.075
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const res = await fetch('http://localhost:8000/analyze', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!res.ok) {
+        throw new Error('Analysis failed');
       }
-    });
-    
-    setAppState('results');
+      
+      const data = await res.json();
+      setResultData(data);
+      setAppState('results');
+    } catch (error) {
+      console.error(error);
+      setAppState('idle');
+      alert('Failed to analyze image. Please ensure the backend is running.');
+    }
   };
 
   const renderStatusBadge = () => {
