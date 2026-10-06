@@ -135,7 +135,7 @@ def run_inference(pil_image, registry: ModelRegistry, explain: bool = False, exp
         "modality_confidence": modality_confidence,
         "prediction": prediction,
         "prediction_confidence": prediction_confidence,
-        "all_class_probabilities": all_probs,
+        "all_class_probabilities": dict(sorted(all_probs.items(), key=lambda kv: kv[1], reverse=True)[:4]),
         "low_confidence_warning": low_confidence,
         "message": "OK",
     }
@@ -155,3 +155,4 @@ def run_inference(pil_image, registry: ModelRegistry, explain: bool = False, exp
             result["explanation_error"] = str(e)
 
     return result
+
