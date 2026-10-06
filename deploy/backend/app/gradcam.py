@@ -121,13 +121,15 @@ class GradCAM:
 
 
 # ----------------------------------------------------------------------------- rendering helpers (numpy/PIL only)
+_STOPS = np.array([0.0, 0.35, 0.6, 0.8, 1.0])
+_COLORS = np.array([[0, 200, 255], [0, 255, 120], [255, 240, 0], [255, 120, 0], [255, 0, 60]], dtype=np.float32)
+
+
 def jet(v):
-    """v: float array in [0,1] -> uint8 RGB (matplotlib-'jet'-like, no matplotlib dependency)."""
+    """Name kept so nothing else changes. Bright ramp that stays visible on dark and red images."""
     v = np.clip(v, 0, 1)
-    r = np.clip(1.5 - np.abs(4 * v - 3), 0, 1)
-    g = np.clip(1.5 - np.abs(4 * v - 2), 0, 1)
-    b = np.clip(1.5 - np.abs(4 * v - 1), 0, 1)
-    return (np.stack([r, g, b], axis=-1) * 255).astype(np.uint8)
+    out = np.stack([np.interp(v, _STOPS, _COLORS[:, c]) for c in range(3)], axis=-1)
+    return out.astype(np.uint8)
 
 
 def resize_cam(cam, size_wh):
@@ -135,19 +137,20 @@ def resize_cam(cam, size_wh):
     return np.asarray(im.resize(size_wh, Image.BILINEAR), dtype=np.float32) / 255.0
 
 
-def make_overlay(image, cam, alpha=0.5, cutoff=0.15):
-    """Blend the heatmap onto the image; areas below `cutoff` stay untouched so the whole image isn't tinted."""
+def make_overlay(image, cam, alpha=0.75, cutoff=0.2):
+    """Blend heat onto the image. The image is darkened under the heat so the colours stay visible."""
     base = np.asarray(image.convert("RGB"), dtype=np.float32)
-    a = (alpha * np.clip((cam - cutoff) / (1 - cutoff), 0, 1))[..., None]
-    out = base * (1 - a) + jet(cam).astype(np.float32) * a
-    return Image.fromarray(out.astype(np.uint8))
+    t = np.clip((cam - cutoff) / (1 - cutoff), 0, 1)
+    a = (alpha * t ** 0.7)[..., None]
+    dim = 1 - 0.5 * t[..., None]
+    out = base * dim * (1 - a) + jet(cam).astype(np.float32) * a
+    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
 
 
-def make_heat_rgba(cam, cutoff=0.15):
-    """Transparent-background heatmap the frontend can stack on the original and fade with a slider."""
-    a = (np.clip((cam - cutoff) / (1 - cutoff), 0, 1) * 220).astype(np.uint8)
+def make_heat_rgba(cam, cutoff=0.2):
+    t = np.clip((cam - cutoff) / (1 - cutoff), 0, 1)
+    a = (255 * t ** 0.7).astype(np.uint8)
     return Image.fromarray(np.dstack([jet(cam), a]), "RGBA")
-
 
 def to_b64_png(img):
     buf = io.BytesIO()
@@ -157,7 +160,7 @@ def to_b64_png(img):
 
 # ----------------------------------------------------------------------------- one-call API
 def explain(model, image, preprocess=None, class_names=None, class_idx=None, method="gradcam",
-            alpha=0.5, max_side=768, target_layer=None):
+            alpha=0.75, max_side=768, target_layer=None):
     """
     Explain `model`'s prediction (or `class_idx`) for a PIL image.
     Returns: class_idx, class_name, confidence (prob of the explained class), top3, method, degenerate,
